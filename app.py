@@ -15,15 +15,23 @@ st.set_page_config(
 # --- Load Model and Stats ---
 @st.cache_resource
 def load_model_and_stats():
-    model_path = os.path.join(os.path.dirname(__file__), 'model', 'titanic_model.pkl')
-    stats_path = os.path.join(os.path.dirname(__file__), 'model', 'stats.json')
+    model_path = os.path.join(os.path.dirname(__file__), 'titanic_model.pkl')
+    stats_path = os.path.join(os.path.dirname(__file__), 'stats.json')
     
-    model = joblib.load(model_path)
-    with open(stats_path) as f:
-        stats = json.load(f)
-    return model, stats
+    try:
+        model = joblib.load(model_path)
+        with open(stats_path) as f:
+            stats = json.load(f)
+        return model, stats
+    except Exception as e:
+        st.error(f"Error loading model or stats: {e}")
+        return None, None
 
 model, model_stats = load_model_and_stats()
+
+if model is None or model_stats is None:
+    st.error("Failed to load the model. Please check if 'titanic_model.pkl' and 'stats.json' exist in the root directory.")
+    st.stop()
 
 # --- Custom CSS (to inject some nice styling) ---
 st.markdown("""
