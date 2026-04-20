@@ -1,0 +1,1 @@
+{"accuracy": 81.01, "feature_importances": {"Pclass": 0.131119736984977, "Sex_encoded": 0.42349094316223357, "Age": 0.14592464345872244, "SibSp": 0.05405901826106508, "Parch": 0.041521803819498146, "Fare": 0.171330175636424, "Embarked_encoded": 0.03255367867707977}, "train_size": 712, "test_size": 179, "survived_pct": 38.4, "total_passengers": 891}

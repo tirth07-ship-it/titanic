@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Titanic Survival Predictor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Animated ocean background -->
+  <div class="ocean-bg">
+    <div class="wave wave1"></div>
+    <div class="wave wave2"></div>
+    <div class="wave wave3"></div>
+    <div class="particles" id="particles"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="ship-icon">🚢</div>
+      <div>
+        <h1 class="title">TITANIC</h1>
+        <p class="subtitle">SURVIVAL PREDICTOR · ML MODEL · 81.01% ACCURACY</p>
+      </div>
+    </div>
+    <!-- Model stats bar -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-label">MODEL ACCURACY</span>
+        <span class="stat-value"><span id="stat-accuracy">--</span>%</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-label">PASSENGERS TRAINED</span>
+        <span class="stat-value" id="stat-train_size">--</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-label">SURVIVAL RATE</span>
+        <span class="stat-value"><span id="stat-survived_pct">--</span>%</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-label">ALGORITHM</span>
+        <span class="stat-value">RANDOM FOREST</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="grid">
+
+      <!-- LEFT: Form -->
+      <section class="card form-card">
+        <div class="card-header">
+          <span class="card-num">01</span>
+          <h2 class="card-title">Passenger Details</h2>
+        </div>
+
+        <div class="form-group">
+          <label>Passenger Class</label>
+          <div class="btn-group" id="pclass-group">
+            <button class="opt-btn active" data-value="1">1st Class</button>
+            <button class="opt-btn" data-value="2">2nd Class</button>
+            <button class="opt-btn" data-value="3">3rd Class</button>
+          </div>
+          <input type="hidden" id="pclass" value="1">
+        </div>
+
+        <div class="form-group">
+          <label>Gender</label>
+          <div class="btn-group" id="sex-group">
+            <button class="opt-btn active" data-value="male">♂ Male</button>
+            <button class="opt-btn" data-value="female">♀ Female</button>
+          </div>
+          <input type="hidden" id="sex" value="male">
+        </div>
+
+        <div class="form-group">
+          <label>Age <span class="val-display" id="age-display">29</span></label>
+          <input type="range" id="age" min="1" max="80" value="29" class="slider">
+          <div class="range-labels"><span>1</span><span>80</span></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Siblings / Spouse</label>
+            <div class="number-input">
+              <button class="num-btn" onclick="changeNum('sibsp',-1)">−</button>
+              <span id="sibsp-val">0</span>
+              <input type="hidden" id="sibsp" value="0">
+              <button class="num-btn" onclick="changeNum('sibsp',1)">+</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Parents / Children</label>
+            <div class="number-input">
+              <button class="num-btn" onclick="changeNum('parch',-1)">−</button>
+              <span id="parch-val">0</span>
+              <input type="hidden" id="parch" value="0">
+              <button class="num-btn" onclick="changeNum('parch',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Fare (£) <span class="val-display" id="fare-display">32</span></label>
+          <input type="range" id="fare" min="0" max="500" value="32" class="slider">
+          <div class="range-labels"><span>£0</span><span>£500</span></div>
+        </div>
+
+        <div class="form-group">
+          <label>Port of Embarkation</label>
+          <div class="btn-group" id="embarked-group">
+            <button class="opt-btn active" data-value="S">Southampton</button>
+            <button class="opt-btn" data-value="C">Cherbourg</button>
+            <button class="opt-btn" data-value="Q">Queenstown</button>
+          </div>
+          <input type="hidden" id="embarked" value="S">
+        </div>
+
+        <button class="predict-btn" id="predict-btn" onclick="predict()">
+          <span class="btn-text">PREDICT FATE</span>
+          <span class="btn-icon">⚡</span>
+        </button>
+      </section>
+
+      <!-- RIGHT: Result + Feature Importance -->
+      <div class="right-col">
+
+        <!-- Result Card -->
+        <section class="card result-card" id="result-card">
+          <div class="result-placeholder" id="result-placeholder">
+            <div class="placeholder-icon">⚓</div>
+            <p>Fill in passenger details and click<br><strong>PREDICT FATE</strong> to see the result</p>
+          </div>
+
+          <div class="result-content hidden" id="result-content">
+            <div class="result-icon" id="result-icon"></div>
+            <div class="result-verdict" id="result-verdict"></div>
+            <div class="result-sub" id="result-sub"></div>
+
+            <div class="prob-bars">
+              <div class="prob-row">
+                <span class="prob-label survived-label">SURVIVED</span>
+                <div class="prob-track">
+                  <div class="prob-fill survived-fill" id="survival-bar"></div>
+                </div>
+                <span class="prob-pct" id="survival-pct"></span>
+              </div>
+              <div class="prob-row">
+                <span class="prob-label died-label">PERISHED</span>
+                <div class="prob-track">
+                  <div class="prob-fill died-fill" id="death-bar"></div>
+                </div>
+                <span class="prob-pct" id="death-pct"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Feature Importance -->
+        <section class="card importance-card">
+          <div class="card-header">
+            <span class="card-num">02</span>
+            <h2 class="card-title">Feature Importance</h2>
+          </div>
+          <div class="importance-list" id="importance-list">
+            <!-- Populated by JS -->
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Random Forest Classifier · Trained on <span id="stat-total_passengers">--</span> Titanic Passengers · Built with Flask + Scikit-learn</p>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
